@@ -1,0 +1,32 @@
+{
+  "name": "easy-mediasoup-v3-server",
+  "version": "0.0.1",
+  "private": true,
+  "description": "easy mediasoup server",
+  "author": "Alexey Panfilkin",
+  "license": "MIT",
+  "main": "server.js",
+  "scripts": {
+    "lint": "eslint -c .eslintrc.js server.js lib connect.js",
+    "start": "DEBUG=${DEBUG:='*mediasoup* *INFO* *WARN* *ERROR*'} INTERACTIVE=${INTERACTIVE:='true'} node server.js",
+    "connect": "node connect.js"
+  },
+  "dependencies": {
+    "@sitespeed.io/throttle": "^0.5.4",
+    "awaitqueue": "^2.0.0",
+    "body-parser": "^1.19.0",
+    "colors": "^1.4.0",
+    "debug": "^4.1.1",
+    "express": "^4.17.1",
+    "mediasoup": "github:versatica/mediasoup#v3",
+    "pidusage": "^2.0.17",
+    "protoo-server": "^4.0.3",
+    "sctp": "^0.0.19"
+  },
+  "devDependencies": {
+    "eslint": "^6.7.2",
+    "gulp": "^4.0.2",
+    "gulp-eslint": "^6.0.0",
+    "gulp-plumber": "^1.2.1"
+  }
+}
