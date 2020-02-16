@@ -19,24 +19,27 @@ module.exports =
 	{
 		listenIp   : '0.0.0.0',
 		// NOTE: Don't change listenPort (client app assumes 4443).
-		listenPort : 4443,
+		listenPort : parseInt(process.env.serverPort) || 4443
 		// NOTE: Set your own valid certificate files.
-		tls        :
-		{
-			cert : `${__dirname}/certs/mediasoup-demo.localhost.cert.pem`,
-			key  : `${__dirname}/certs/mediasoup-demo.localhost.key.pem`
-		}
+		// tls        :
+		// {
+		// 	cert : `${__dirname}/certs/mediasoup-demo.localhost.cert.pem`,
+		// 	key  : `${__dirname}/certs/mediasoup-demo.localhost.key.pem`
+		// }
 	},
 	// mediasoup settings.
 	mediasoup :
 	{
+		activeSpeakerDBLevel    : parseInt(process.env.activeSpeakerDBLevel) || -50,
+		activeSpeakeriInterval  : parseInt(process.env.activeSpeakeriInterval) || 800,
+		activeSpeakerMaxEntries : parseInt(process.env.activeSpeakerMaxEntries) || 1,
 		// Number of mediasoup workers to launch.
-		numWorkers     : Object.keys(os.cpus()).length,
+		numWorkers              : Object.keys(os.cpus()).length,
 		// mediasoup WorkerSettings.
 		// See https://mediasoup.org/documentation/v3/mediasoup/api/#WorkerSettings
-		workerSettings :
+		workerSettings          :
 		{
-			logLevel : 'warn',
+			logLevel : process.env.logLevel || 'warn',
 			logTags  :
 			[
 				'info',
@@ -119,10 +122,10 @@ module.exports =
 		{
 			listenIps :
 			[
-				{ ip: '127.0.0.1', announcedIp: null }
+				{ ip: '127.0.0.1', announcedIp: process.env.announcedIp || null }
 			],
-			initialAvailableOutgoingBitrate : 1000000,
-			minimumAvailableOutgoingBitrate : 600000,
+			initialAvailableOutgoingBitrate : parseInt(process.env.initialAvailableOutgoingBitrate) || 1000000,
+			minimumAvailableOutgoingBitrate : parseInt(process.env.minimumAvailableOutgoingBitrate) || 600000,
 			maxSctpMessageSize              : 262144,
 			// Additional options that are not part of WebRtcTransportOptions.
 			maxIncomingBitrate              : 1500000

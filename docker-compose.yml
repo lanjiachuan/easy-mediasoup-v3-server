@@ -1,0 +1,20 @@
+version: '3.4'
+services:
+  mediasoup:
+    build: ./
+    network_mode: host
+    environment:
+      - logLevel=warn
+      - numWorkers=8
+      - maxBitrate=128000
+      - stage=production
+      - serverPort=4443
+      - basicAuthUsername=Oblakogroup
+      - basicAuthPassword=Ob1ako
+      - send_active_speakers_time_interval=2000
+      - activeSpeakerDBLevel=-50
+      - activeSpeakerMaxEntries=1
+      - activeSpeakeriInterval=800
+      - active_enable_check_active_speakers=true
+      - initialAvailableOutgoingBitrate=250000
+      - minimumAvailableOutgoingBitrate=50000

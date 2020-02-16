@@ -22,7 +22,7 @@ const Logger = require('./lib/Logger');
 const Room = require('./lib/Room');
 const interactiveServer = require('./lib/interactiveServer');
 const interactiveClient = require('./lib/interactiveClient');
-
+const pidusage = require('pidusage');
 const logger = new Logger();
 
 // Async queue to manage rooms.
@@ -51,7 +51,7 @@ const mediasoupWorkers = [];
 
 // Index of next mediasoup Worker to use.
 // @type {Number}
-let nextMediasoupWorkerIdx = 0;
+const nextMediasoupWorkerIdx = 0;
 
 run();
 
@@ -443,14 +443,28 @@ async function runProtooWebSocketServer()
 /**
  * Get next mediasoup Worker.
  */
-function getMediasoupWorker()
-{
-	const worker = mediasoupWorkers[nextMediasoupWorkerIdx];
+async function getMediasoupWorker()
+{	
+	let nextWorkerIndex = 0;
+	let workerCPUUsage = null;
 
-	if (++nextMediasoupWorkerIdx === mediasoupWorkers.length)
-		nextMediasoupWorkerIdx = 0;
+	let index = 0;
 
-	return worker;
+	for (const w of mediasoupWorkers)
+	{
+		const usage = await pidusage(w.pid);
+
+		logger.info(`index: ${index}, usage.cpu: ${usage.cpu}`);
+		if (workerCPUUsage == null || (workerCPUUsage > usage.cpu)) 
+		{
+			nextWorkerIndex = index;
+			workerCPUUsage = usage.cpu;
+		}
+		index++;
+	}
+	logger.info('Selected worker', nextWorkerIndex);
+	
+	return mediasoupWorkers[nextWorkerIndex];
 }
 
 /**
@@ -465,7 +479,7 @@ async function getOrCreateRoom({ roomId, forceH264 = false, forceVP9 = false })
 	{
 		logger.info('creating a new Room [roomId:%s]', roomId);
 
-		const mediasoupWorker = getMediasoupWorker();
+		const mediasoupWorker = await getMediasoupWorker();
 
 		room = await Room.create({ mediasoupWorker, roomId, forceH264, forceVP9 });
 
