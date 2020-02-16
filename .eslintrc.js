@@ -39,7 +39,7 @@ module.exports =
 		'func-call-spacing': 2,
 		'generator-star-spacing': 2,
 		'guard-for-in': 2,
-		'indent': [ 2, 'tab', { 'SwitchCase': 1 } ],
+		'indent': [ 2, 'space', { 'SwitchCase': 1 } ],
 		'key-spacing': [ 2,
 		{
 			singleLine:

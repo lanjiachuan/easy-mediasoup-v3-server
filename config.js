@@ -13,9 +13,13 @@ const os = require('os');
 module.exports =
 {
 	// Listening hostname (just for `gulp live` task).
-	domain : 'localhost',
+	domain    : 'localhost',
 	// Signaling settings (protoo WebSocket server and HTTP API server).
-	https  :
+	basicAuth : {
+		username : process.env.basicAuthUsername || 'admin',
+		password : process.env.basicAuthPassword || 'password'
+	},
+	https :
 	{
 		listenIp   : '0.0.0.0',
 		// NOTE: Don't change listenPort (client app assumes 4443).

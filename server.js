@@ -24,6 +24,22 @@ const interactiveServer = require('./lib/interactiveServer');
 const interactiveClient = require('./lib/interactiveClient');
 const pidusage = require('pidusage');
 const logger = new Logger();
+const realm = require('express-http-auth').realm('Mediasoup');
+const Stats = require('./lib/Stats');
+const checkUser = function(req, res, next) 
+{
+	if (req.username == config.basicAuth.username && 
+		  req.password == config.basicAuth.password) 
+	{
+		next();
+	}
+	else 
+	{
+		res.send(403);
+	}
+};
+
+const auth = [ realm, checkUser ];
 
 // Async queue to manage rooms.
 // @type {AwaitQueue}
@@ -49,9 +65,8 @@ let protooWebSocketServer;
 // @type {Array<mediasoup.Worker>}
 const mediasoupWorkers = [];
 
-// Index of next mediasoup Worker to use.
-// @type {Number}
-const nextMediasoupWorkerIdx = 0;
+// Statistics for mediasoup
+let stats;
 
 run();
 
@@ -76,14 +91,15 @@ async function run()
 	// Run a protoo WebSocketServer.
 	await runProtooWebSocketServer();
 
+	stats = new Stats(rooms, mediasoupWorkers);
 	// Log rooms status every X seconds.
-	setInterval(() =>
-	{
-		for (const room of rooms.values())
-		{
-			room.logStatus();
-		}
-	}, 120000);
+	// setInterval(() =>
+	// {
+	// 	for (const room of rooms.values())
+	// 	{
+	// 		room.logStatus();
+	// 	}
+	// }, 120000);
 }
 
 /**
@@ -116,12 +132,12 @@ async function runMediasoupWorkers()
 		mediasoupWorkers.push(worker);
 
 		// Log worker resource usage every X seconds.
-		setInterval(async () =>
-		{
-			const usage = await worker.getResourceUsage();
+		// setInterval(async () =>
+		// {
+		// 	const usage = await worker.getResourceUsage();
 
-			logger.info('mediasoup Worker resource usage [pid:%d]: %o', worker.pid, usage);
-		}, 120000);
+		// 	logger.info('mediasoup Worker resource usage [pid:%d]: %o', worker.pid, usage);
+		// }, 120000);
 	}
 }
 
@@ -133,9 +149,11 @@ async function createExpressApp()
 	logger.info('creating Express app...');
 
 	expressApp = express();
-
+	
 	expressApp.use(bodyParser.json());
-
+	expressApp.use(express.static('public'));
+	expressApp.set('view engine', 'ejs');
+	
 	/**
 	 * For every API request, verify that the roomId in the path matches and
 	 * existing room.
@@ -355,6 +373,21 @@ async function createExpressApp()
 				next();
 			}
 		});
+
+	expressApp.get('/stats', auth, async (req, res) =>
+	{
+		try 
+		{
+			const params = {
+				stats: await stats.render()
+			}
+			res.render('stats', params);
+		}
+		catch (err) 
+		{
+			console.error(err);
+		}
+	});
 }
 
 /**
